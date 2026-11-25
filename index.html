@@ -208,11 +208,11 @@ render();
   //show settings only for admin
   const params = new URLSearchParams(window.location.search);
   if (params.get('admin')=== '1') {
-    document.getElementById('settingsBtn').style.display = 'block';
+    document.getElementById('settings-btn').style.display = 'block';
     const pin = prompt('Enter Admin PIN:');
     if (pin !== '1234') {
       alert('Wrong PIN');
-      document.getElementById('settingsBtn').style.display = 'none';
+      document.getElementById('settings-btn').style.display = 'none';
     }
   }
 </script>
