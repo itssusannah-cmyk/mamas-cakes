@@ -82,7 +82,7 @@
       const card = document.createElement('div');
       card.className = 'card';
       // FIX: Show price EXACTLY as typed, no comma formatting
-      card.innerHTML = `<img src="${cake.image}"><div><b>${cake.name}</b><br><span class="price">${cake.price} TZS</span><a class="orderBtn" target="_blank" href="https://wa.me/${whatsapp}?text=${encodeURIComponent('Hi '+shopName+'! I want to order: '+cake.name+' - '+cake.price+' TZS')}">Order on WhatsApp</a>${isAdmin ? `<button class="delBtn" onclick="deleteCake('${key}')">🗑️ Delete This Cake</button>` : ''}</div>`;
+      card.innerHTML = `<img src="${cake.image}"><div><b>${cake.name}</b><br><span class="price">${cake.price} TZS</span><a class="orderBtn" target="_blank" href="https://wa.me/${whatsapp}?text=${encodeURIComponent('Habari '+shopName+'! Nataka kuweka oda ya: '+cake.name+' - '+cake.price+' TZS')}">Agiza kwa WhatsApp</a>${isAdmin ? `<button class="delBtn" onclick="deleteCake('${key}')">🗑️ Delete This Cake</button>` : ''}</div>`;
       grid.appendChild(card);
     });
   });
@@ -123,7 +123,7 @@
   let lang = 'en';
   window.switchLang = function(){
     lang = lang === 'en' ? 'sw' : 'en';
-    document.querySelector('[data-t="tagline"]').textContent = lang === 'en' ? 'Fresh, Sweet, Homemade' : 'Freshi, Tamu, za Nyumbani';
+    document.querySelector('[data-t="tagline"]').textContent = lang === 'en' ? 'Fresh, Sweet, Homemade' : 'Freshi, Tamu, Kwa ajili yako';
   };
 </script>
 </body>
