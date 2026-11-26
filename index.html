@@ -15,6 +15,7 @@
   .card div{padding:10px}
   .price{color:#FF7A00;font-weight:bold}
   .orderBtn{display:block;background:#25D366;color:white;text-align:center;padding:12px;text-decoration:none;border-radius:10px;margin-top:8px;font-weight:bold}
+  .delBtn{display:block;background:#ff4444;color:white;text-align:center;padding:10px;border:none;border-radius:10px;margin-top:8px;width:100%;font-weight:bold;cursor:pointer}
   #adminPanel{display:none;background:white;margin:12px;padding:15px;border-radius:15px;border:2px dashed #FF7A00}
   input{width:100%;padding:10px;margin:6px 0;border:1px solid #ddd;border-radius:10px;box-sizing:border-box}
   .adminBtn{background:#0B1D3A;color:white;border:none;padding:12px;border-radius:10px;width:100%;margin-top:6px;cursor:pointer}
@@ -41,11 +42,11 @@
   <input type="file" id="inPhoto" accept="image/*">
   <img id="preview" style="width:100%;border-radius:12px;display:none">
   <button class="adminBtn" onclick="addCake()">Add / Update Cake</button>
-  <p style="font-size:12px;color:#888">Photos upload to Cloudinary. Visible to all customers instantly.</p>
+  <p style="font-size:12px;color:#888">To DELETE a cake, scroll down and click the red Delete button under that cake. Only visible in Admin mode.</p>
 </div>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   const CLOUD_NAME = "egyibkor";
   const UPLOAD_PRESET = "baker_upload";
   const firebaseConfig = {
@@ -66,7 +67,8 @@
   document.getElementById('inShopName').value = shopName;
   document.getElementById('inWhatsapp').value = whatsapp;
   const params = new URLSearchParams(window.location.search);
-  if(params.get('admin') === '1'){ document.getElementById('adminPanel').style.display = 'block'; }
+  const isAdmin = params.get('admin') === '1';
+  if(isAdmin){ document.getElementById('adminPanel').style.display = 'block'; }
   document.getElementById('inPhoto').addEventListener('change', (e)=>{
     const file = e.target.files[0];
     if(file){ const url = URL.createObjectURL(file); const prev = document.getElementById('preview'); prev.src = url; prev.style.display = 'block'; }
@@ -76,13 +78,19 @@
     const data = snap.val();
     grid.innerHTML = '';
     if(!data){ grid.innerHTML = '<p style="padding:20px">No cakes yet. Add one in Admin.</p>'; return; }
-    Object.values(data).reverse().forEach(cake=>{
+    Object.entries(data).reverse().forEach(([key, cake])=>{
       const card = document.createElement('div');
       card.className = 'card';
-      card.innerHTML = `<img src="${cake.image}"><div><b>${cake.name}</b><br><span class="price">${Number(cake.price).toLocaleString()} TZS</span><a class="orderBtn" target="_blank" href="https://wa.me/${whatsapp}?text=${encodeURIComponent('Hi '+shopName+'! I want to order: '+cake.name+' - '+cake.price+' TZS')}">Order on WhatsApp</a></div>`;
+      // FIX: Show price EXACTLY as typed, no comma formatting
+      card.innerHTML = `<img src="${cake.image}"><div><b>${cake.name}</b><br><span class="price">${cake.price} TZS</span><a class="orderBtn" target="_blank" href="https://wa.me/${whatsapp}?text=${encodeURIComponent('Hi '+shopName+'! I want to order: '+cake.name+' - '+cake.price+' TZS')}">Order on WhatsApp</a>${isAdmin ? `<button class="delBtn" onclick="deleteCake('${key}')">🗑️ Delete This Cake</button>` : ''}</div>`;
       grid.appendChild(card);
     });
   });
+  window.deleteCake = async function(key){
+    if(!confirm('Delete this cake?')) return;
+    await remove(ref(db, 'cakes/' + key));
+    alert('Deleted!');
+  };
   window.addCake = async function(){
     const name = document.getElementById('inCakeName').value.trim();
     const price = document.getElementById('inPrice').value.trim();
@@ -104,7 +112,7 @@
       const data = await res.json();
       if(!data.secure_url) throw new Error(data.error?.message || 'Upload failed');
       await push(ref(db, 'cakes'), { name, price, image: data.secure_url });
-      alert('Cake saved! Customers can see it now.');
+      alert('Cake saved!');
       document.getElementById('inCakeName').value = '';
       document.getElementById('inPrice').value = '';
       document.getElementById('inPhoto').value = '';
